@@ -34,6 +34,7 @@ print(f"AR:{AR}")
 COI = bd_params.iloc[2,1] # FILA 0 COLUMNA 1  COI = 39780 # Costo por m2 por instalar obra
 print(f"COI:{COI}")
 PT = bd_params.iloc[3,1] # FILA 0 COLUMNA 1  PT = 723248 # Presupuesto total comuna de Vitacura
+# PT= 0
 print(f"PT:{PT}")
 AT = bd_areasparques['Área'].tolist() # Area total de cada area a
 print(f"AT:{AT}")
@@ -105,7 +106,7 @@ model.addConstr((quicksum((AT[a] - AO[a]) for a in A) >= AR * P), name="C4") # t
 # model.addConstrs((R[a,h,d] == 0 for a in A for h in H if h >= 9 and h <= 20 for d in D), name="C5")
 
 # C6: Agua utilizada para regar un area debe ser igual al consumo de la vegetacion presente en el area
-model.addConstrs((R[a]== quicksum((CPV[j] * 183 + CPI[j] * 183) * CAJ[j,a] for j in J) + quicksum((CAV[n] * 183 + CAI[n] *183) * CAN[n,a] for n in N) + AP[a] * (CAPV *183 + CAPI * 183) for a in A) , name="C6")
+model.addConstrs(((R[a]== quicksum((CPV[j] * 183 + CPI[j] * 183) * CAJ[j,a] for j in J)  + quicksum((CAV[n] * 183 + CAI[n] *183) * CAN[n,a] for n in N)+ AP[a] * (CAPV *183 + CAPI * 183) )for a in A) , name="C6")
 
 # C7: Area de vegetacion en cada area debe ser mayor o igual al minimo establecido
 model.addConstrs(((quicksum(CAJ[j,a] * APJ[j] for j in J) + quicksum(CAN[n,a] * APN[n] for n in N) + AP[a] >= AT[a] * PMV) for a in A), name="C7")
@@ -148,7 +149,7 @@ model.addConstr((quicksum(COI * AO[a] +
 
 model.addConstrs((CAJ[j,a] <= V[j,a]*quicksum(CAJ[j,a] for j in J) for j in J for a in A), name="C18")
 
-model.addConstrs((CAN[n,a] <= U[n,a]*quicksum(CAN[n,a] for n in N) for n in N for a in A), name="C18")
+model.addConstrs((CAN[n,a] <= U[n,a]*quicksum(CAN[n,a] for n in N) for n in N for a in A), name="C19")
 
 model.update()
 
@@ -162,6 +163,9 @@ model.printAttr('X')
 model.write("modelo.json")
 for a in A:
     print(f"AO_{a}: {AO[a].x}")
-# for a in A:
-#     for j in J:
-#         print(f"V_{j}_{a}: {V[j,a] .x}")
+    print(f"AT_{a}: {AT[a]}")
+    print(f"AF_{a}: {AT[a]-AO[a].x}")
+    for j in J:
+        print(f"V_{j}_{a}: {V[j,a] .x}")
+
+    
