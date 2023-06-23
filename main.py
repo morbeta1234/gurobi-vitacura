@@ -157,14 +157,6 @@ model.setObjective(FO, GRB.MINIMIZE)
 
 model.optimize()
 
-# model.printAttr('X')
 model.write("modelo.json")
-# for a in A:
-#     print(f"AO_{a}: {AO[a].x}") if AO[a].x < 0 else None
-#     print(f"AT_{a}: {AT[a]}") if AT[a] < 0 else None
-#     print(f"AF_{a}: {AT[a]-AO[a].x}") if AT[a]-AO[a].x < 0 else None
-#     for j in J:
-#         print(f"V_{j}_{a}: {V[j,a] .x}") if V[j,a] .x < 0 else None
-#         print(f"CAJ{j}_{a}: {CAJ[j,a] .x}") if CAJ[j,a] .x < 0 else None
 
     
