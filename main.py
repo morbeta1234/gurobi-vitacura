@@ -28,45 +28,49 @@ M = 10000000000000000000000
 
 # PARAMS
 P = bd_params.iloc[0,1] # FILA 0 COLUMNA 1  P = 97388 # Poblacion Vitacura
-print(f"P: {P}")
+# print(f"P: {P}")
 AR = bd_params.iloc[1,1] # FILA 0 COLUMNA 1  AR = 9 # M2 de area verde recomendada por OMS
-print(f"AR:{AR}") 
+# print(f"AR:{AR}") 
 COI = bd_params.iloc[2,1] # FILA 0 COLUMNA 1  COI = 39780 # Costo por m2 por instalar obra
-print(f"COI:{COI}")
+# print(f"COI:{COI}")
 PT = bd_params.iloc[3,1] # FILA 0 COLUMNA 1  PT = 723248 # Presupuesto total comuna de Vitacura
 # PT= 0
-print(f"PT:{PT}")
+# print(f"PT:{PT}")
 AT = bd_areasparques['Área'].tolist() # Area total de cada area a
-print(f"AT:{AT}")
+# print(f"AT:{AT}")
 APJ = bd_vegetacion_hoja1['Area Promedio (en m2)'].tolist() # Area promedio j-esimo arbol
-print(f"APJ:{APJ}")
+# print(f"APJ:{APJ}")
 CPA = bd_vegetacion_hoja1['Precio Plantación'].tolist() # Costo de plantar arbol j
-print(f"CPA:{CPA}")
+# print(f"CPA:{CPA}")
 CRA = bd_vegetacion_hoja1['Precio transplante (sacado)'].tolist()  # Costo de remover arbol j
-print(f"CRA:{CRA}")
+# print(f"CRA:{CRA}")
 CPI = bd_vegetacion_hoja1['consuma de agua en invierno (en m3)'].tolist() # Consumo de agua de arbol j en invierno
-print(f"CPI:{CPI}")
+# print(f"CPI:{CPI}")
 CPV = bd_vegetacion_hoja1['consumo de agua en verano'].tolist()  # Consumo de agua arbol j en verano
-print(f"CPV:{CPV}")
+# print(f"CPV:{CPV}")
 CAPV = bd_vegetacion_hoja2['agua necesaria por metro cuadrado (Verano)'].tolist()[0] # Consumo de agua por m2 de pasto en verano
-print(f"CAPV:{CAPV}")
+# print(f"CAPV:{CAPV}")
 CAPI = bd_vegetacion_hoja2['agua necesaria por metro cuadrado (Invierno)'].tolist()[0] # Consumo de agua por m2 de pasto en invierno
-print(f"CAPI:{CAPI}")
+# print(f"CAPI:{CAPI}")
 CPP = bd_vegetacion_hoja2['instalacion de pasto'].tolist()[0] # Costo de plantar m2 pasto
-print(f"CPP:{CPP}")
+# print(f"CPP:{CPP}")
 CPR = bd_vegetacion_hoja2['remocion de pasto'].tolist()[0] # Costo de remover m2 pasto
-print(f"CRP:{CPR}")
+# print(f"CRP:{CPR}")
 APN = bd_vegetacion_hoja3['area ocupada por la planta (m2)'].tolist() # Area promedio n-esimo arbusto
-print(f"APN:{APN}")
-CAV = bd_vegetacion_hoja3[' m3 por semana por metro cuadrado de planta (VERANO)'].tolist() # Consumo de agua de arbusto n en verano
-print(f"CAV:{CAV}")
-CAI = bd_vegetacion_hoja3['m3 por semana por metro cuadrado (INVIERNO)'].tolist() # Consumo de agua de arbusto n en invierno
-print(f"CAI:{CAI}")
+# print(f"APN:{APN}")
+CAV = bd_vegetacion_hoja3['m3 por arbusto [diario] (VERANO)'].tolist() # Consumo de agua de arbusto n en verano
+# print(f"CAV:{CAV}")
+CAI = bd_vegetacion_hoja3['m3  por arbusto [diario] (INVIERNO)'].tolist() # Consumo de agua de arbusto n en invierno
+# print(f"CAI:{CAI}")
 CPAN = bd_vegetacion_hoja3['precio instalar 1 planta'].tolist() # Costo de plantar arbusto n
-print(f"CPAN:{CPAN}")
+# print(f"CPAN:{CPAN}")
 CRAN = bd_vegetacion_hoja3['precio sacar'].tolist() # Costo de remover arbusto n
-print(f"CRAN:{CRAN}")
+# print(f"CRAN:{CRAN}")
 PMV = 0.5 # Porcentaje minimo de area verde en cada area
+RAAJ = 0.2 # Porcentaje maximo de area de arboles en cada area
+RAAN = 0.1 # Porcentaje maximo de area de arbustos en cada area
+RAP = 0.3 # Porcentaje minimo de area de pasto en cada area
+
 
 
 # VARIABLES
@@ -147,9 +151,22 @@ model.addConstr((quicksum(COI * AO[a] +
                             for a in A) <= PT), name="C17")
 
 
-model.addConstrs((CAJ[j,a] <= V[j,a]*quicksum(CAJ[j,a] for j in J) for j in J for a in A), name="C18")
+# model.addConstrs((CAJ[j,a] <= V[j,a]*quicksum(CAJ[j,a] for j in J) for j in J for a in A), name="C18")
 
-model.addConstrs((CAN[n,a] <= U[n,a]*quicksum(CAN[n,a] for n in N) for n in N for a in A), name="C19")
+# model.addConstrs((CAN[n,a] <= U[n,a]*quicksum(CAN[n,a] for n in N) for n in N for a in A), name="C19")
+
+model.addConstrs((CAJ[j,a] >= V[j,a] for j in J for a in A), name="C18")
+
+model.addConstrs((CAN[n,a] >= U[n,a] for n in N for a in A), name="C19")
+
+model.addConstrs((quicksum(CAJ[j,a] * APJ[j] for j in J) <= AT[a] * RAAJ for a in A), name="C20" )
+
+model.addConstrs((quicksum(CAN[n,a] * APN[n] for n in N) <= AT[a] * RAAN for a in A), name="C21" )
+
+model.addConstrs((AO[a] * COI >= 0 for a in A), name="C22" )
+
+model.addConstrs((AP[a]  >= AT[a] * RAP for a in A), name="C23" )
+
 
 model.update()
 
@@ -159,13 +176,14 @@ model.setObjective(FO, GRB.MINIMIZE)
 
 model.optimize()
 
-model.printAttr('X')
+# model.printAttr('X')
 model.write("modelo.json")
 for a in A:
-    print(f"AO_{a}: {AO[a].x}")
-    print(f"AT_{a}: {AT[a]}")
-    print(f"AF_{a}: {AT[a]-AO[a].x}")
+    print(f"AO_{a}: {AO[a].x}") if AO[a].x < 0 else None
+    print(f"AT_{a}: {AT[a]}") if AT[a] < 0 else None
+    print(f"AF_{a}: {AT[a]-AO[a].x}") if AT[a]-AO[a].x < 0 else None
     for j in J:
-        print(f"V_{j}_{a}: {V[j,a] .x}")
+        print(f"V_{j}_{a}: {V[j,a] .x}") if V[j,a] .x < 0 else None
+        print(f"CAJ{j}_{a}: {CAJ[j,a] .x}") if CAJ[j,a] .x < 0 else None
 
     
