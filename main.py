@@ -94,11 +94,7 @@ model.update()
 
 
 # CONSTRAINTS
-# C1: Existe una division entre verano e invierno
-# model.addConstr(quicksum(E[d] for d in D) == 183, name="C1")
 
-# C2: La mitad del tiempo es verano, el resto invierno
-# model.addConstrs((E[d] == 1 for d in D if d <= 183), name="C2")
 
 # C3: Area utilizada por pasto, arboles, arbustos y obras debe ser igual al area total
 model.addConstrs((AT[a] == AO[a] + AP[a] + quicksum(CAJ[j,a] * APJ[j] for j in J) + quicksum(CAN[n,a] for n in N) for a in A), name="C3")
@@ -130,18 +126,6 @@ model.addConstrs((CAJ[j,a] <= M * V[j,a] for j in J for a in A), name="C11")
 # C12: Solo puede haber arbustos plantados de una especie si esta esta presente en el area
 model.addConstrs((CAN[n,a] <= M * U[n,a] for n in N for a in A ), name="C12")
 
-# C13: La cantidad de arboles debe ser igual que lo presente el dia anterior, menos lo removido y mas lo plantado.
-# model.addConstrs(quicksum(CAJ[j,a,d] for j in J) == quicksum(CAJ[j,a,d-1] + PA[j,a,d] - RA[j,a,d] for j in J) for a in A for d in D if d > 1)
-
-# C14: La cantidad de arbustos debe ser igual que lo presente el dia anterior, menos lo removido y mas lo plantado.
-# model.addConstrs(quicksum(CAN[n,a,d] for n in N) == quicksum(CAN[n,a,d-1] + PAN[n,a,d] - RAN[n,a,d] for n in N) for a in A for d in D if d > 1)
-
-# C15: La cantidad de pasto instalado debe ser igual que lo presente el dia anterior, menos lo removido y mas lo plantado.
-# model.addConstrs(AP[a,d] == AP[a, d-1] + AIA[a,d] - ARA[a, d] for a in A for d in D if d > 1)
-
-# C16: La cantidad de obras instaladas debe ser igual que lo presente el dia anterior, menos lo removido y mas lo plantado.
-# model.addConstrs(AO[a,d] == AO[a, d-1] + AIO[a,d] - ARO[a, d] for a in A for d in D if d > 1)
-
 # C17: Los costos de obras y movimientos de vegetacion no deben superar el presupuesto total.
 model.addConstr((quicksum(COI * AO[a] + 
                             CPP * AIA[a]+
@@ -151,9 +135,6 @@ model.addConstr((quicksum(COI * AO[a] +
                             for a in A) <= PT), name="C17")
 
 
-# model.addConstrs((CAJ[j,a] <= V[j,a]*quicksum(CAJ[j,a] for j in J) for j in J for a in A), name="C18")
-
-# model.addConstrs((CAN[n,a] <= U[n,a]*quicksum(CAN[n,a] for n in N) for n in N for a in A), name="C19")
 
 model.addConstrs((CAJ[j,a] >= V[j,a] for j in J for a in A), name="C18")
 
